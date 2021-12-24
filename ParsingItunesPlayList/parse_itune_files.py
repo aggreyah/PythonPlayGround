@@ -1,4 +1,6 @@
 import plistlib
+
+
 def findDuplicates(fileName):
     print(f"Finding duplicate files in {fileName}...")
     #read in a playlist
@@ -42,3 +44,36 @@ def findDuplicates(fileName):
     for value in duplicates:
         duplicates_file.write(f"{value[0]} {value[1]}\n")
     duplicates_file.close()
+
+def findCommonTracks(fileNames):
+    # a list of a set of track names
+    trackNameSets = []
+    for fileName in fileNames:
+        # create a new set
+        trackNames = set()
+        # read in playlist
+        plist = plistlib.readPlist(fileName)
+        # get tracks
+        tracks = plist['Tracks']
+        # iterate through tracks
+        for trackId, track in tracks.items():
+            try:
+                # add the track name to a set
+                trackNames.add(track['Name'])
+            except:
+                # ignore
+                pass
+        # add to list
+        trackNameSets.append(trackNames)
+    # get the set of common tracks
+    commonTracks = set.intersection(*trackNameSets)
+    # write to file
+    if len(commonTracks) > 0:
+        common_tracks_file_handle = open("common_tracks.txt", "w")
+        for value in commonTracks:
+            value_string = f"{value}\n"
+            common_tracks_file_handle.write(value_string.encode("UTF-8"))
+        common_tracks_file_handle.close()
+        print(f"{len(commonTracks)} common tracks found. Track names written to common_tracks.txt.")
+    else:
+        print("No common tracks!")
