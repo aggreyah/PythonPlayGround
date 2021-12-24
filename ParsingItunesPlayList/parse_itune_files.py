@@ -1,4 +1,6 @@
 import plistlib
+import numpy as np
+import matplotlib as pyplot
 
 
 def findDuplicates(fileName):
@@ -77,3 +79,45 @@ def findCommonTracks(fileNames):
         print(f"{len(commonTracks)} common tracks found. Track names written to common_tracks.txt.")
     else:
         print("No common tracks!")
+
+
+def plotStats(fileName):
+    # read in a playlist
+    plist = plistlib.readPlist(fileName)
+    # get the tracks from the playlist
+    tracks = plist['Tracks']
+    ratings = []
+    durations = []
+    # iterate through the tracks
+    for trackId, track in tracks.items():
+        try:
+            ratings.append(track['Album Rating'])
+            durations.append(track['Total Time'])
+        except:
+            # ignore
+            pass
+    # ensure that valid data was collected.
+    if ratings == [] or durations == []:
+        print(f"No valid Album Rating/Total Time data in {fileName}.")
+        return
+    
+    # scatter plot
+    x_axis_values = np.array(durations, np.int32)
+    # convert to minutes
+    x_axis_values = x_axis_values / 60000.0
+    y_axis_values = np.array(ratings, np.int32)
+    pyplot.subplot(2,1,1)
+    pyplot.plot(x_axis_values, y_axis_values, 'o')
+    pyplot.axis([0, 1.05*np.max(x_axis_values), -1, 110])
+    pyplot.xlabel('Track duration')
+    pyplot.ylabel('Track rating')
+
+    # plot histogram
+    pyplot.subplot(2, 1, 2)
+    pyplot.hist(x_axis_values, bins = 20)
+    pyplot.xlabel('Track duration')
+    pyplot.ylabel('Count')
+
+    # show plot
+    pyplot.show()
+
