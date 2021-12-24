@@ -1,12 +1,15 @@
+import os
 import plistlib
 import numpy as np
 import matplotlib as pyplot
+import argparse
 
 
 def findDuplicates(fileName):
+    print(f"findDuplicates is now running...")
     print(f"Finding duplicate files in {fileName}...")
     #read in a playlist
-    plist = plistlib.readPlist(fileName)
+    plist = plistlib.load(fileName)
     #get the tracks from the tracks dictionary
     tracks = plist['Tracks']
     #create a track name dictionary
@@ -42,19 +45,25 @@ def findDuplicates(fileName):
     else:
         print("No duplicate tracks found!")
 
-    duplicates_file = open("duplicates_file.txt", "w")
+    savePath = r"C:\Users\aggreyah\Documents\Coding\PythonPlayGround\ParsingItunesPlayList"
+    file_name = "duplicates_file.txt"
+    completeName = os.path.join(savePath, file_name)
+    common_tracks_file_handle = open(completeName, "w")
+
+    duplicates_file = open(completeName, "w")
     for value in duplicates:
         duplicates_file.write(f"{value[0]} {value[1]}\n")
     duplicates_file.close()
 
 def findCommonTracks(fileNames):
+    print(f"findCommonTracks is now running...")
     # a list of a set of track names
     trackNameSets = []
     for fileName in fileNames:
         # create a new set
         trackNames = set()
         # read in playlist
-        plist = plistlib.readPlist(fileName)
+        plist = plistlib.load(fileName)
         # get tracks
         tracks = plist['Tracks']
         # iterate through tracks
@@ -71,7 +80,10 @@ def findCommonTracks(fileNames):
     commonTracks = set.intersection(*trackNameSets)
     # write to file
     if len(commonTracks) > 0:
-        common_tracks_file_handle = open("common_tracks.txt", "w")
+        savePath = r"C:\Users\aggreyah\Documents\Coding\PythonPlayGround\ParsingItunesPlayList"
+        file_name = "common_tracks.txt"
+        completeName = os.path.join(savePath, file_name)
+        common_tracks_file_handle = open(completeName, "w")
         for value in commonTracks:
             value_string = f"{value}\n"
             common_tracks_file_handle.write(value_string.encode("UTF-8"))
@@ -83,7 +95,8 @@ def findCommonTracks(fileNames):
 
 def plotStats(fileName):
     # read in a playlist
-    plist = plistlib.readPlist(fileName)
+    with open(fileName, 'rb') as handle:
+        plist = plistlib.load(handle)
     # get the tracks from the playlist
     tracks = plist['Tracks']
     ratings = []
@@ -121,3 +134,35 @@ def plotStats(fileName):
     # show plot
     pyplot.show()
 
+
+def main():
+    # create parser
+    descriptionString = """
+    This program analyzes playlist files (.xml) exported from iTunes.
+    """
+    parser = argparse.ArgumentParser(description=descriptionString)
+    # add a mutually exclusive group of arguments
+    group = parser.add_mutually_exclusive_group()
+
+    # add expected arguments
+    group.add_argument('--common', nargs='*', dest='plFiles', required=False)
+    group.add_argument('--stats', dest='plFile', required=False)
+    group.add_argument('--dup', dest='plFileD', required=False)
+
+    # parse args
+    args = parser.parse_args()
+
+    if args.plFiles:
+        # find common tracks
+        findCommonTracks(args.plFiles)
+    elif args.plFile:
+        # plot stats
+        plotStats(args.plFile)
+    elif args.plFileD:
+        # find duplicate tracks
+        findDuplicates(args.plFileD)
+    else:
+        print("These are not the tracks you are looking for.")
+
+if __name__ == '__main__':
+    main()
