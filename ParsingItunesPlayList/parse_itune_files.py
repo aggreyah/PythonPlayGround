@@ -25,3 +25,20 @@ def findDuplicates(fileName):
         except:
             #ignore
             pass
+    
+    #store duplicates as (name, count) tuples
+    duplicates = []
+    for key, value in trackNames.items():
+        if value[1] > 1:
+            duplicates.append((value[1], key))
+
+    #save duplicates to a file
+    if len(duplicates) > 0:
+        print(f"Found {len(duplicates)} duplicates. Track names saved to dup.txt")
+    else:
+        print("No duplicate tracks found!")
+
+    duplicates_file = open("duplicates_file.txt", "w")
+    for value in duplicates:
+        duplicates_file.write(f"{value[0]} {value[1]}\n")
+    duplicates_file.close()
